@@ -15,6 +15,9 @@ MediSense AI helps people understand their symptoms and know what to do — with
 - **Gives clear action steps** — go to the ER, see a doctor, or rest at home
 - **Asks follow-up questions** to refine the assessment conversationally
 - **Updates its analysis** as the user provides more information
+- **Finds nearby hospitals** via geolocation for emergency and urgent cases
+- **Exports a PDF report** of the full triage summary
+- **Copies a shareable summary** to clipboard
 
 ---
 
@@ -29,11 +32,12 @@ MediSense AI bridges that gap: it gives people a calm, intelligent first assessm
 ## 🧠 How It Works
 
 1. User describes their symptoms in the chat input
-2. The app sends the symptoms to **Google Gemini 2.0 Flash** with a structured medical triage prompt
+2. The app sends the symptoms to **Google Gemini 3.1 Flash Lite** with a structured medical triage prompt
 3. Gemini returns a JSON response with triage level, possible conditions, action steps, and clarifying questions
 4. The app renders a visual triage card color-coded by urgency
 5. The user can click follow-up questions or type more details
 6. Gemini refines its assessment based on the full conversation history
+7. For emergency/urgent cases, a pulsing button opens Google Maps filtered for nearby hospitals
 
 ---
 
@@ -50,12 +54,15 @@ MediSense AI bridges that gap: it gives people a calm, intelligent first assessm
 
 ## 🛠 Tech Stack
 
-| Tech                        | Role                                        |
-| --------------------------- | ------------------------------------------- |
-| HTML / CSS / JavaScript     | Frontend (zero framework, zero build step)  |
-| Google Gemini 2.0 Flash API | AI reasoning and medical triage             |
-| Gemini `systemInstruction`  | Structured JSON prompt engineering          |
-| Conversation history        | Multi-turn context for follow-up refinement |
+| Tech                             | Role                                        |
+| -------------------------------- | ------------------------------------------- |
+| HTML / CSS / JavaScript          | Frontend (zero framework, zero build step)  |
+| Google Gemini 3.1 Flash Lite API | AI reasoning and medical triage             |
+| Gemini `systemInstruction`       | Structured JSON prompt engineering          |
+| Conversation history             | Multi-turn context for follow-up refinement |
+| Browser Geolocation API          | Finds nearby hospitals via Google Maps      |
+| DOM `addEventListener`           | Reliable dynamic button handling            |
+| `window.print()`                 | PDF report generation                       |
 
 ---
 
@@ -63,7 +70,9 @@ MediSense AI bridges that gap: it gives people a calm, intelligent first assessm
 
 ```
 medisense-ai/
-└── index.html      # Entire app — UI, logic, and Gemini integration
+├── index.html      # App structure and markup
+├── style.css       # All styling
+├── app.js          # All logic and Gemini API integration
 └── README.md       # This file
 ```
 
@@ -77,24 +86,23 @@ Go to [aistudio.google.com](https://aistudio.google.com), sign in, and create a 
 
 ### 2. Add Your Key
 
-Open `index.html` and find this line near the bottom:
+Open `app.js` and update line 1:
 
 ```js
-const GEMINI_API_KEY = "YOUR_API_KEY_HERE";
+const GEMINI_API_KEY = "your-key-here";
 ```
-
-Replace `YOUR_API_KEY_HERE` with your actual key.
 
 ### 3. Run It
 
-No server, no install, no build step needed. Just open `index.html` in any browser:
+Must be served (not opened directly) due to separate files:
 
 ```bash
-# Option 1: double-click the file
-# Option 2: drag it into your browser
-# Option 3: use a local server
+# Option 1: VS Code — right-click index.html → Open with Live Server
+# Option 2: terminal
 npx serve .
 ```
+
+Then open `http://localhost:3000`
 
 ---
 
@@ -104,7 +112,11 @@ npx serve .
 - **Multi-turn memory** — Gemini remembers the full conversation and refines its assessment
 - **Clickable follow-up questions** — lowers friction for non-tech users
 - **Color-coded urgency** — instantly communicates severity at a glance
-- **Zero dependencies** — pure HTML/CSS/JS, runs anywhere
+- **🏥 Nearby hospital finder** — geolocation → Google Maps for emergency/urgent cases
+- **💊 First aid tips** — quick home care guidance for monitor/see-doctor results
+- **📄 PDF export** — printable triage report with all details
+- **🔗 Share summary** — one-click clipboard copy to share with someone
+- **Zero dependencies** — pure HTML/CSS/JS, no frameworks, no build step
 - **Medical disclaimer** — clearly states it's not a substitute for professional advice
 
 ---
@@ -112,11 +124,9 @@ npx serve .
 ## 🔮 Planned Features
 
 - [ ] Voice input for symptoms
-- [ ] Location-based hospital/clinic finder
 - [ ] Medication interaction checker
-- [ ] Symptom history tracking
+- [ ] Symptom history tracking across sessions
 - [ ] Multilingual support (Yoruba, Hausa, Igbo)
-- [ ] Export symptom report as PDF for doctor visits
 
 ---
 
