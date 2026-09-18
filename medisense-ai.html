@@ -574,6 +574,20 @@
 
       let conversationHistory = [];
       let isFirstMessage = true;
+      let __fqMap = {};
+      let __fqCounter = 0;
+
+      window.__fq = function (btn) {
+        const key = btn.getAttribute("data-fq");
+        const q = __fqMap[key];
+        if (q) sendMessage(q);
+      };
+
+      function makeFQButton(q) {
+        const key = "fq_" + ++__fqCounter;
+        __fqMap[key] = q;
+        return `<button class="fq-btn" data-fq="${key}" onclick="window.__fq(this)">${q}</button>`;
+      }
 
       function handleKey(e) {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -720,13 +734,7 @@ Always be compassionate, clear, and avoid medical jargon.`,
       <div class="followup-card">
         <p>Help me refine your assessment — answer one or more of these:</p>
         <div class="followup-questions">
-          ${r.follow_up_questions
-            .map(
-              (q) => `
-            <button class="fq-btn" onclick="sendMessage(${JSON.stringify(q)})">${q}</button>
-          `,
-            )
-            .join("")}
+          ${r.follow_up_questions.map((q) => makeFQButton(q)).join("")}
         </div>
       </div>
     `;
@@ -770,13 +778,7 @@ Always be compassionate, clear, and avoid medical jargon.`,
       <div class="followup-card" style="margin-top:0.75rem;">
         <p>Want to tell me more?</p>
         <div class="followup-questions">
-          ${r.follow_up_questions
-            .map(
-              (q) => `
-            <button class="fq-btn" onclick="sendMessage(${JSON.stringify(q)})">${q}</button>
-          `,
-            )
-            .join("")}
+          ${r.follow_up_questions.map((q) => makeFQButton(q)).join("")}
         </div>
       </div>`
           : ""
@@ -791,14 +793,31 @@ Always be compassionate, clear, and avoid medical jargon.`,
         const div = document.createElement("div");
         div.className = `bubble ${role === "ai" ? "ai" : "user"}`;
 
-        const avatar = `<div class="avatar ${role === "ai" ? "ai" : "user-av"}">${role === "ai" ? "🩺" : "👤"}</div>`;
+        const avatarDiv = document.createElement("div");
+        avatarDiv.className = `avatar ${role === "ai" ? "ai" : "user-av"}`;
+        avatarDiv.textContent = role === "ai" ? "🩺" : "👤";
+
         const bubble = document.createElement("div");
         bubble.className = "bubble-content";
 
-        if (isHTML) bubble.innerHTML = content;
-        else bubble.textContent = content;
+        if (isHTML) {
+          bubble.innerHTML = content;
+          // Attach click listeners directly to fq buttons after DOM insertion
+          bubble.querySelectorAll &&
+            setTimeout(() => {
+              bubble.querySelectorAll(".fq-btn").forEach((btn) => {
+                btn.addEventListener("click", function () {
+                  const key = this.getAttribute("data-fq");
+                  const q = __fqMap[key];
+                  if (q) sendMessage(q);
+                });
+              });
+            }, 0);
+        } else {
+          bubble.textContent = content;
+        }
 
-        div.innerHTML = avatar;
+        div.appendChild(avatarDiv);
         div.appendChild(bubble);
         history.appendChild(div);
         div.scrollIntoView({ behavior: "smooth", block: "end" });
